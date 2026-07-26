@@ -1,0 +1,28 @@
+---
+id: the-innovator-s-dilemma
+title: The Innovator's Dilemma
+subtitle: null
+author: Clayton Christensen
+type: nonfiction
+category: Leadership, Business & Decision Making
+mini_theme: 3
+mini_theme_name: Strategy & Competition
+level: 4
+sequence: 232
+phase: Phase 2
+round: 4
+status: draft
+why_chosen: null
+connects_from: competitive-strategy
+connects_to: blue-ocean-strategy
+source_lists: []
+owned: true
+review:
+  own_site_url: null
+  medium_url: null
+  linkedin_posted: null
+  rating: null
+  finished_date: null
+---
+
+<!-- Review body goes here once written. Empty until then. -->

@@ -1,0 +1,28 @@
+---
+id: being-and-time
+title: Being and Time
+subtitle: null
+author: Martin Heidegger
+type: nonfiction
+category: Modern Philosophy
+mini_theme: 4
+mini_theme_name: Existentialism & Meaning (1850–1950)
+level: 7
+sequence: 386
+phase: Phase 3
+round: 5
+status: draft
+why_chosen: null
+connects_from: on-the-genealogy-of-morality
+connects_to: existentialism-is-a-humanism
+source_lists: []
+owned: false
+review:
+  own_site_url: null
+  medium_url: null
+  linkedin_posted: null
+  rating: null
+  finished_date: null
+---
+
+<!-- Review body goes here once written. Empty until then. -->

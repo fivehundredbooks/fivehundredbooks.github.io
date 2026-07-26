@@ -1,0 +1,28 @@
+---
+id: after-virtue
+title: After Virtue
+subtitle: null
+author: Alasdair MacIntyre
+type: nonfiction
+category: Modern Philosophy
+mini_theme: 5
+mini_theme_name: Contemporary Philosophy & Ethics (1900–Present)
+level: 8
+sequence: 449
+phase: Phase 3
+round: 8
+status: draft
+why_chosen: 'demoted from Level 9: more historical-narrative in style than Rawls''s drier analytic argument next to it'
+connects_from: a-theory-of-justice
+connects_to: practical-ethics
+source_lists: []
+owned: false
+review:
+  own_site_url: null
+  medium_url: null
+  linkedin_posted: null
+  rating: null
+  finished_date: null
+---
+
+<!-- Review body goes here once written. Empty until then. -->
