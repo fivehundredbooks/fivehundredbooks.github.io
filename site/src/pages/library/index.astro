@@ -1,29 +1,8 @@
 ---
-import fs from 'node:fs';
-import path from 'node:path';
 import Layout from '../../layouts/Layout.astro';
-import { parseCsv } from '../../lib/util';
+import { loadOwnershipBooks } from '../../lib/util';
 
-// process.cwd() is the `site/` directory (both `astro build` locally and the
-// withastro/action CI step run with that as cwd), so the data folder is one
-// level up, as a sibling of `site/` at the repo root.
-const csvPath = path.resolve(process.cwd(), '../data/ownership.csv');
-const raw = fs.readFileSync(csvPath, 'utf-8');
-const rows = parseCsv(raw).filter((r) => r.length > 1 && r[0] !== '');
-const [, ...dataRows] = rows;
-
-const books = dataRows
-  .map((r) => ({
-    title: r[0]?.trim() ?? '',
-    subtitle: r[1]?.trim() ?? '',
-    author: r[2]?.trim() ?? '',
-    formats: (r[3] ?? '')
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean),
-  }))
-  .filter((b) => b.title)
-  .sort((a, b) => a.title.localeCompare(b.title));
+const books = loadOwnershipBooks();
 
 const counts: Record<string, number> = { Kindle: 0, Physical: 0, Audible: 0 };
 for (const b of books) {
@@ -72,7 +51,7 @@ for (const b of books) {
         data-author={b.author.toLowerCase()}
         data-formats={b.formats.join(',').toLowerCase()}
       >
-        <span class="lib-title">{b.title}</span>
+        <a class="lib-title" href={`/library/${b.slug}/`}>{b.title}</a>
         {b.subtitle && <span class="lib-subtitle">— {b.subtitle}</span>}
         <span class="author">{b.author}</span>
         {b.formats.map((f) => (

@@ -1,4 +1,6 @@
 import type { CollectionEntry } from 'astro:content';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // Category/novels folder slug is already baked into the entry's path-based id
 // (e.g. "world-history/sapiens" -> "world-history"), since the migration script
@@ -63,4 +65,73 @@ export function parseCsv(text: string): string[][] {
     rows.push(row);
   }
   return rows;
+}
+
+// Slug helpers mirroring scripts/migrate_curriculum.py's slugify()/last_name_slug(),
+// so ownership-library slugs feel consistent with curriculum slugs even though
+// they're generated independently (ownership.csv has no stable "id" of its own).
+function slugify(s: string): string {
+  const ascii = s
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, ''); // strip accents, like the Python unicodedata step
+  return ascii
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function lastNameSlug(author: string): string {
+  const cleaned = author.replace(/\(.*?\)/g, '').trim();
+  const firstAuthor = cleaned.replace(/&/g, ',').split(',')[0];
+  const parts = firstAuthor.trim().split(/\s+/).filter(Boolean);
+  return parts.length ? slugify(parts[parts.length - 1]) : 'unknown';
+}
+
+export interface OwnedBook {
+  slug: string;
+  title: string;
+  subtitle: string;
+  author: string;
+  formats: string[];
+}
+
+// Reads data/ownership.csv (a sibling of the `site/` directory at the repo
+// root) and returns every owned book with a unique slug. Shared by the
+// library index (search/filter list) and the per-book detail pages, so both
+// generate the exact same slug for the exact same row.
+export function loadOwnershipBooks(): OwnedBook[] {
+  const csvPath = path.resolve(process.cwd(), '../data/ownership.csv');
+  const raw = fs.readFileSync(csvPath, 'utf-8');
+  const rows = parseCsv(raw).filter((r) => r.length > 1 && r[0] !== '');
+  const [, ...dataRows] = rows;
+
+  const usedSlugs = new Set<string>();
+  const books: OwnedBook[] = [];
+
+  for (const r of dataRows) {
+    const title = r[0]?.trim() ?? '';
+    if (!title) continue;
+    const subtitle = r[1]?.trim() ?? '';
+    const author = r[2]?.trim() ?? '';
+    const formats = (r[3] ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const base = slugify(title);
+    let slug = base;
+    if (usedSlugs.has(slug)) {
+      slug = `${base}-${lastNameSlug(author)}`;
+    }
+    if (usedSlugs.has(slug)) {
+      let i = 2;
+      while (usedSlugs.has(`${base}-${lastNameSlug(author)}-${i}`)) i++;
+      slug = `${base}-${lastNameSlug(author)}-${i}`;
+    }
+    usedSlugs.add(slug);
+
+    books.push({ slug, title, subtitle, author, formats });
+  }
+
+  return books.sort((a, b) => a.title.localeCompare(b.title));
 }

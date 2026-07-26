@@ -1,0 +1,35 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { loadOwnershipBooks } from '../../lib/util';
+
+export async function getStaticPaths() {
+  const books = loadOwnershipBooks();
+  return books.map((b) => ({ params: { slug: b.slug }, props: { book: b } }));
+}
+
+const { book } = Astro.props;
+---
+
+<Layout
+  title={book.title}
+  description={`${book.title}${book.author ? ` by ${book.author}` : ''} — owned on ${book.formats.join(', ')}.`}
+>
+  <p class="meta"><a href="/library/">&larr; My Library</a></p>
+
+  <h1>{book.title}</h1>
+  {book.subtitle && <p class="meta">{book.subtitle}</p>}
+  {book.author && <p>by {book.author}</p>}
+
+  <p class="meta">
+    {book.formats.map((f) => (
+      <span class={`format-badge format-${f.toLowerCase()}`}>{f}</span>
+    ))}
+  </p>
+
+  <p>
+    This one's from my personal library, not the 500-book curriculum — no
+    review or reading-order placement attached. Browse{' '}
+    <a href="/reading-order/">the reading order</a> or{' '}
+    <a href="/categories/">the categories</a> for the curated 500.
+  </p>
+</Layout>
