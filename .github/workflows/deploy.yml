@@ -21,16 +21,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # withastro/action builds the site AND uploads the Pages artifact in
+      # one step -- it wraps actions/upload-pages-artifact internally. Adding
+      # a separate upload-pages-artifact step here (as the first version of
+      # this workflow did) creates two artifacts with the same default name
+      # ("github-pages") in the same run, which GitHub rejects with a 409
+      # Conflict. Don't re-add an "Upload artifact" step below.
       - name: Build with Astro
         uses: withastro/action@v3
         with:
           path: ./site
           node-version: 22
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./site/dist
 
   deploy:
     needs: build
