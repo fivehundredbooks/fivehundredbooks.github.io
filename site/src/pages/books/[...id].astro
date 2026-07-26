@@ -11,6 +11,7 @@ export async function getStaticPaths() {
 const { book, allBooks } = Astro.props;
 const { data } = book;
 const { Content } = await render(book);
+const canonicalPath = new URL(Astro.url.pathname, Astro.site).toString();
 
 // Category-adjacent (same category/mini-theme table order) -- useful as a
 // secondary link, but NOT the actual reading order.
@@ -28,9 +29,31 @@ const seqPrev = seqIndex > 0 ? ordered[seqIndex - 1] : null;
 const seqNext = seqIndex >= 0 && seqIndex < ordered.length - 1 ? ordered[seqIndex + 1] : null;
 
 const readingStatus = data.review.reading_status;
+
+// Minimal schema.org/Book structured data. Kept conservative -- only fields
+// we actually have and are confident about (name, author, url, and a rating
+// once a book is genuinely finished and rated). No invented ISBNs/publish
+// dates, since we don't have reliable ones for most editions.
+const jsonLd: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'Book',
+  name: data.title,
+  author: { '@type': 'Person', name: data.author },
+  url: canonicalPath,
+};
+if (data.why_chosen) jsonLd.abstract = data.why_chosen;
+if (readingStatus === 'finished' && data.review.rating != null) {
+  jsonLd.review = {
+    '@type': 'Review',
+    reviewRating: { '@type': 'Rating', ratingValue: data.review.rating, bestRating: 10 },
+    author: { '@type': 'Person', name: 'Jez' },
+  };
+}
 ---
 
 <Layout title={data.title} description={data.why_chosen ?? undefined}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+
   <p class="meta">
     <a href={`/categories/${book.id.split('/')[0]}/`}>&larr; {data.category}</a>
   </p>

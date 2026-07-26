@@ -226,3 +226,18 @@ p.bio {
   margin: 1.2rem 0 2rem;
   color: var(--ink);
 }
+
+/* --- Honest proof-point strip (About page) --- */
+.proof-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 0 0 1.6rem;
+  font-family: -apple-system, Helvetica, Arial, sans-serif;
+}
+.proof-item { text-align: center; }
+.proof-item .num { display: block; font-family: Georgia, serif; font-size: 1.6rem; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 0.35rem; }
+.proof-item .label { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
+@media (max-width: 600px) {
+  .proof-strip { grid-template-columns: 1fr; gap: 0.8rem; }
+}

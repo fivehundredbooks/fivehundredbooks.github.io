@@ -31,6 +31,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:site" content="@5hundredbooks" />
+    <slot name="head" />
   </head>
   <body>
     <header class="site-header">
