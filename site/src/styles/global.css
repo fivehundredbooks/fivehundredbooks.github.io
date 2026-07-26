@@ -69,3 +69,49 @@ footer.site-footer { border-top: 1px solid var(--border); margin-top: 3rem; padd
 
 .phase-block { margin-bottom: 2.2rem; }
 .round-label { font-family: -apple-system, Helvetica, Arial, sans-serif; font-size: 0.78rem; color: var(--muted); margin-top: 1rem; }
+
+.library-controls { margin: 1.4rem 0 1rem; font-family: -apple-system, Helvetica, Arial, sans-serif; }
+.library-search {
+  width: 100%;
+  font-size: 1rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+  margin-bottom: 0.7rem;
+}
+.library-search:focus { outline: 1px solid var(--accent); }
+
+.library-filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.library-filters button {
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+}
+.library-filters button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.library-filters button:hover { border-color: var(--accent); }
+
+.library-list li { font-size: 0.95rem; }
+.lib-title { font-weight: 700; }
+.lib-subtitle { color: var(--muted); font-style: italic; margin-left: 0.3rem; }
+.library-list .author { margin-left: 0.5rem; }
+
+.format-badge {
+  font-family: -apple-system, Helvetica, Arial, sans-serif;
+  font-size: 0.68rem;
+  border-radius: 3px;
+  padding: 0.05rem 0.4rem;
+  margin-left: 0.4rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.format-kindle { border-color: #2f6f4f; color: #2f6f4f; }
+.format-physical { border-color: var(--accent); color: var(--accent); }
+.format-audible { border-color: #3b5a9a; color: #3b5a9a; }

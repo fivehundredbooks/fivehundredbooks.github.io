@@ -1,0 +1,124 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import Layout from '../../layouts/Layout.astro';
+import { parseCsv } from '../../lib/util';
+
+// process.cwd() is the `site/` directory (both `astro build` locally and the
+// withastro/action CI step run with that as cwd), so the data folder is one
+// level up, as a sibling of `site/` at the repo root.
+const csvPath = path.resolve(process.cwd(), '../data/ownership.csv');
+const raw = fs.readFileSync(csvPath, 'utf-8');
+const rows = parseCsv(raw).filter((r) => r.length > 1 && r[0] !== '');
+const [, ...dataRows] = rows;
+
+const books = dataRows
+  .map((r) => ({
+    title: r[0]?.trim() ?? '',
+    subtitle: r[1]?.trim() ?? '',
+    author: r[2]?.trim() ?? '',
+    formats: (r[3] ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+  }))
+  .filter((b) => b.title)
+  .sort((a, b) => a.title.localeCompare(b.title));
+
+const counts: Record<string, number> = { Kindle: 0, Physical: 0, Audible: 0 };
+for (const b of books) {
+  for (const f of b.formats) {
+    if (counts[f] !== undefined) counts[f]++;
+  }
+}
+---
+
+<Layout
+  title="My Library"
+  description="Every book I own across Kindle, Physical, and Audible — not just the 500-book curriculum."
+>
+  <h1>My Library</h1>
+  <p class="meta">{books.length} books owned, across Kindle, Physical, and Audible</p>
+
+  <p>
+    This is everything I actually own — thrillers, comics, sales books, the lot —
+    not just the curated 500. It's a private inventory, not a syllabus. See{' '}
+    <a href="/reading-order/">the reading order</a> or{' '}
+    <a href="/categories/">the categories</a> for the actual curriculum; any
+    curriculum book I already own is marked "you own this" on its own page.
+  </p>
+
+  <div class="library-controls">
+    <input
+      type="search"
+      id="library-search"
+      class="library-search"
+      placeholder="Search by title or author…"
+      autocomplete="off"
+    />
+    <div class="library-filters" id="library-filters">
+      <button type="button" data-format="all" class="active">All ({books.length})</button>
+      <button type="button" data-format="kindle">Kindle ({counts.Kindle})</button>
+      <button type="button" data-format="physical">Physical ({counts.Physical})</button>
+      <button type="button" data-format="audible">Audible ({counts.Audible})</button>
+    </div>
+    <p class="meta" id="library-count">Showing {books.length} of {books.length}</p>
+  </div>
+
+  <ul class="book-list library-list" id="library-list">
+    {books.map((b) => (
+      <li
+        data-title={b.title.toLowerCase()}
+        data-author={b.author.toLowerCase()}
+        data-formats={b.formats.join(',').toLowerCase()}
+      >
+        <span class="lib-title">{b.title}</span>
+        {b.subtitle && <span class="lib-subtitle">— {b.subtitle}</span>}
+        <span class="author">{b.author}</span>
+        {b.formats.map((f) => (
+          <span class={`format-badge format-${f.toLowerCase()}`}>{f}</span>
+        ))}
+      </li>
+    ))}
+  </ul>
+</Layout>
+
+<script>
+  const search = document.getElementById('library-search') as HTMLInputElement | null;
+  const list = document.getElementById('library-list');
+  const filters = document.getElementById('library-filters');
+  const countEl = document.getElementById('library-count');
+
+  if (search && list && filters && countEl) {
+    const items = [...list.querySelectorAll('li')] as HTMLLIElement[];
+    let activeFormat = 'all';
+
+    function applyFilter() {
+      const q = (search as HTMLInputElement).value.trim().toLowerCase();
+      let shown = 0;
+      for (const li of items) {
+        const matchesText =
+          !q ||
+          (li.dataset.title ?? '').includes(q) ||
+          (li.dataset.author ?? '').includes(q);
+        const matchesFormat =
+          activeFormat === 'all' || (li.dataset.formats ?? '').includes(activeFormat);
+        const visible = matchesText && matchesFormat;
+        li.style.display = visible ? '' : 'none';
+        if (visible) shown++;
+      }
+      countEl!.textContent = `Showing ${shown} of ${items.length}`;
+    }
+
+    search.addEventListener('input', applyFilter);
+    filters.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest('button');
+      if (!btn) return;
+      activeFormat = btn.dataset.format ?? 'all';
+      [...filters.querySelectorAll('button')].forEach((b) =>
+        b.classList.toggle('active', b === btn)
+      );
+      applyFilter();
+    });
+  }
+</script>

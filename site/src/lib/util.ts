@@ -18,3 +18,49 @@ export function findByDataId(
   if (!dataId) return undefined;
   return books.find((b) => b.data.id === dataId);
 }
+
+// Minimal RFC4180 CSV parser — handles quoted fields, embedded commas, and
+// escaped quotes ("" inside a quoted field). Used for data/ownership.csv,
+// which is exported straight from LibraryThing/Kindle/Audible and can have
+// commas in subtitles.
+export function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += c;
+      }
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ',') {
+      row.push(field);
+      field = '';
+    } else if (c === '\r') {
+      // skip, \n handles the line break
+    } else if (c === '\n') {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = '';
+    } else {
+      field += c;
+    }
+  }
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
+}
