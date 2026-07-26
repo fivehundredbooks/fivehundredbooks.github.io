@@ -1,0 +1,240 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { loadOwnershipBooks } from '../lib/util';
+
+const books = await getCollection('books');
+const nonfiction = books.filter((b) => b.data.type === 'nonfiction');
+const novels = books.filter((b) => b.data.type === 'fiction');
+const categories = [...new Set(nonfiction.map((b) => b.data.category))];
+const ownedCurriculum = books.filter((b) => b.data.owned);
+
+const owned = loadOwnershipBooks();
+const formatCounts: Record<string, number> = { Kindle: 0, Physical: 0, Audible: 0 };
+for (const b of owned) {
+  for (const f of b.formats) {
+    if (formatCounts[f] !== undefined) formatCounts[f]++;
+  }
+}
+const multiFormat = owned.filter((b) => b.formats.length > 1).length;
+const authorCounts = new Map<string, number>();
+for (const b of owned) {
+  if (!b.author) continue;
+  authorCounts.set(b.author, (authorCounts.get(b.author) ?? 0) + 1);
+}
+const topAuthors = [...authorCounts.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 8);
+const maxFormatCount = Math.max(...Object.values(formatCounts));
+---
+
+<Layout
+  title="About"
+  description="The 500 Books Challenge: a self-directed liberal education, and the library it draws from."
+>
+  <h1>About</h1>
+  <p class="meta">The challenge, and the library it draws from</p>
+
+  <h2>The Challenge</h2>
+
+  <p>
+    The 500 Books Challenge isn't really about reading 500 books. It's about
+    building a self-directed liberal education over the next decade or more —
+    a deliberate answer to one question: <em>if I could design the education I
+    wish I'd had, what would it look like?</em>
+  </p>
+
+  <p>
+    Instead of collecting random books, this is a curriculum: a structured
+    attempt to teach myself how the world works.
+  </p>
+
+  <h3>The end goal</h3>
+  <p>
+    By the end of the challenge, I want to understand why civilizations rise
+    and fall, how governments and economies work, how science explains
+    reality, how technology is changing humanity, how great leaders think, how
+    wars are won and lost, why people behave the way they do, what
+    philosophers have argued for 2,500 years, the great religious and moral
+    traditions, and the greatest stories ever written. Breadth and depth
+    together — understood well enough to see how it all connects.
+  </p>
+
+  <h3>Why 500 books</h3>
+  <p>
+    500 is deliberately almost impossible to finish quickly. This is a 10–20
+    year project, not a reading sprint. The goal is to slowly compound
+    knowledge for the rest of my life — never trading depth for pace.
+  </p>
+
+  <h3>Structure</h3>
+  <p>
+    <strong>{novels.length} novels</strong> — not just "fiction," but the
+    greatest stories humanity has produced, chosen for what they teach: love,
+    ambition, justice, sacrifice, courage, tyranny, freedom, suffering,
+    redemption, family, power.
+  </p>
+  <p>
+    <strong>{nonfiction.length} non-fiction books</strong> across{' '}
+    <strong>{categories.length} categories</strong> of 25 each, every category
+    split into five mini-themes of five books — a syllabus, not a pile. The 15
+    categories fall into five broader parts:
+  </p>
+  <ul class="book-list">
+    <li><strong>How the World Works</strong> — Science, Technology &amp; AI, Nature/Geography/Environment</li>
+    <li><strong>How Humans Work</strong> — Psychology, Health &amp; Longevity, Ancient Philosophy, Modern Philosophy</li>
+    <li><strong>How Society Works</strong> — Politics &amp; Economics, Religion &amp; Mythology, Leadership/Business/Decision Making</li>
+    <li><strong>How We Got Here</strong> — World History, British History, Military History, Biography</li>
+    <li><strong>How People Explore and Build</strong> — Exploration, Adventure &amp; Travel</li>
+  </ul>
+  <p>
+    The two halves answer different questions. The novels are about
+    understanding people through stories; the non-fiction is about
+    understanding reality through ideas. Neither is the "serious" half — they
+    run alongside each other.
+  </p>
+
+  <h3>Levels</h3>
+  <p>
+    The curriculum runs Level 0 to Level 10 — not a difficulty rating, but a
+    build order. Level 0 lays the basic map of a subject; each later level
+    adds complexity that only makes sense once the earlier foundation is in
+    place. Level 10 books are hard only because, by then, the scaffolding to
+    understand them already exists. Each category caps out at one or two of
+    its hardest books, so the whole thing stays sustainable over 10–20 years
+    rather than front-loading burnout.
+  </p>
+
+  <h3>Reading order</h3>
+  <p>
+    This is the part that matters most. Not History, then Science, then
+    Shakespeare, then AI, then Napoleon, then Buddhism, in no particular order
+    — that's a library, not a curriculum. Every book should prepare the reader
+    for the next, each one answering a question the last one raised, so the
+    whole thing feels like climbing a staircase. See{' '}
+    <a href="/reading-order/">the full reading order</a>.
+  </p>
+
+  <h3>The canon</h3>
+  <p>
+    The list draws on respected sources — the Guardian's Best Novels, BBC
+    lists, the Bokklubben World Library, Le Monde's 100 Books of the Century,
+    TIME's All-Time 100 Novels, and Tom Butler-Bowdon's collections — but no
+    single list is followed blindly. Each book is weighed against three
+    criteria: historical significance, enduring influence, and practical
+    value to the goals above. A book on multiple lists is a strong signal,
+    not an automatic pass; a book on only one list can still earn its place
+    on merit.
+  </p>
+
+  <p class="connects">
+    <strong>What makes this different.</strong> This isn't a "books to read
+    before I die" list, a Goodreads challenge, or a race to 500. It's a
+    deliberate curriculum designed to build a wiser, more informed, more
+    capable mind over a lifetime. The books are the vehicle — the real goal
+    is lifelong learning. That's why <strong>ABL — Always Be Learning</strong>{' '}
+    sits at the center of the project.
+  </p>
+
+  <h2>The Library</h2>
+
+  <p class="meta">The shelf the challenge draws from</p>
+
+  <p>
+    The 500 Books curriculum is a small, curated list — pulled from a much
+    bigger personal library built up over years across physical shelves,
+    Kindle, and Audible. The curriculum is what gets read <em>with
+    intention</em>; the library is everything else it's chosen from. Browse
+    the whole thing on <a href="/library/">the library page</a>.
+  </p>
+
+  <div class="about-stat-grid">
+    <div class="about-stat"><span class="num">{owned.length}</span><span class="label">Books owned</span></div>
+    <div class="about-stat"><span class="num">{authorCounts.size}</span><span class="label">Unique authors</span></div>
+    <div class="about-stat"><span class="num">{multiFormat}</span><span class="label">Owned in 2+ formats</span></div>
+  </div>
+
+  <h3>By format</h3>
+  <div class="about-bars">
+    {Object.entries(formatCounts).map(([format, count]) => (
+      <div class="about-bar-item">
+        <div class="about-bar-label"><span>{format}</span><b>{count.toLocaleString()}</b></div>
+        <div class="about-bar-track">
+          <div class={`about-bar-fill format-${format.toLowerCase()}`} style={`width:${(count / maxFormatCount) * 100}%`}></div>
+        </div>
+      </div>
+    ))}
+  </div>
+  <p class="meta">Some books are owned in more than one format, so these totals add up to more than {owned.length}.</p>
+
+  <h3>Most-owned authors</h3>
+  <p>
+    The library skews heavily toward fast-paced fiction — thrillers, military
+    and espionage series, long-running detective procedurals — which is
+    exactly why the 500 Books curriculum exists as a separate, deliberate list
+    rather than just "whatever's on the shelf."
+  </p>
+  <ul class="book-list">
+    {topAuthors.map(([author, count]) => (
+      <li>{author} <span class="meta">— {count} books</span></li>
+    ))}
+  </ul>
+
+  <h3>Overlap with the curriculum</h3>
+  <p>
+    <strong>{ownedCurriculum.length}</strong> of the {books.length} curriculum
+    books confirmed so far are already on the shelf — each marked "you own
+    this" on its own page. The rest will be acquired as the reading order
+    reaches them, not bought in advance.
+  </p>
+</Layout>
+
+<style>
+  .about-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin: 1.4rem 0;
+    font-family: -apple-system, Helvetica, Arial, sans-serif;
+  }
+  .about-stat {
+    background: var(--bg, #fff);
+    padding: 1rem 0.8rem;
+    text-align: center;
+  }
+  .about-stat .num {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+  .about-stat .label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  .about-bars { margin: 1rem 0; font-family: -apple-system, Helvetica, Arial, sans-serif; }
+  .about-bar-item { margin-bottom: 0.8rem; }
+  .about-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+  }
+  .about-bar-label b { color: var(--muted); font-weight: 600; }
+  .about-bar-track {
+    background: color-mix(in srgb, var(--border) 60%, transparent);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .about-bar-fill { height: 100%; border-radius: 4px; }
+  .about-bar-fill.format-kindle { background: #2f6f4f; }
+  .about-bar-fill.format-physical { background: var(--accent); }
+  .about-bar-fill.format-audible { background: #3b5a9a; }
+</style>
