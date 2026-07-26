@@ -34,7 +34,9 @@ review:
   medium_url: null
   linkedin_posted: null
   rating: null
-  finished_date: null
+  started_on: null
+  finished_on: null
+  key_takeaway: null
 ---
 
 <!-- Review body goes here once written. Empty until then. -->

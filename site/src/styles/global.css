@@ -292,3 +292,55 @@ nav.site-nav {
 .theme-toggle .icon-dark { display: none; }
 :root[data-theme='dark'] .theme-toggle .icon-light { display: none; }
 :root[data-theme='dark'] .theme-toggle .icon-dark { display: inline; }
+
+/* --- Key takeaway blurb (book page) --- */
+p.key-takeaway {
+  font-style: italic;
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--ink);
+}
+
+/* --- Reading log (/reading-log/) --- */
+.log-currently {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 2rem;
+}
+.log-currently li {
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.log-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+.log-timeline li {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 0.9rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.log-date {
+  font-family: -apple-system, Helvetica, Arial, sans-serif;
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.log-event-finished { color: var(--good); }
+.log-event-started { color: var(--warn); }
+.log-takeaway {
+  font-style: italic;
+  color: var(--muted);
+  margin: 0.25rem 0 0;
+}
+.log-empty {
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  padding: 1.2rem;
+  margin: 1rem 0;
+}

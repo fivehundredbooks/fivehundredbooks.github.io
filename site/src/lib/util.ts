@@ -56,15 +56,23 @@ export function bySequence(books: CollectionEntry<'books'>[]): CollectionEntry<'
     .sort((a, b) => (a.data.sequence ?? 0) - (b.data.sequence ?? 0));
 }
 
-// Reading-progress helpers, all driven off review.reading_status /
-// review.finished_date. A book counts as "read" once reading_status is
-// 'finished' -- kept as a function (not a filter callers repeat) so the
-// homepage, category pages, and any future page agree on the definition.
+// Reading status is derived from review.started_on / review.finished_on
+// rather than stored as its own field -- one pair of dates to hand-edit,
+// not a date pair plus a status enum that could drift out of sync with it.
+// Kept as functions (not filters callers repeat) so the homepage, category
+// pages, the reading log, and any future page all agree on the definition.
+export type ReadingStatus = 'not_started' | 'reading' | 'finished';
+
+export function getReadingStatus(b: CollectionEntry<'books'>): ReadingStatus {
+  if (b.data.review.finished_on) return 'finished';
+  if (b.data.review.started_on) return 'reading';
+  return 'not_started';
+}
 export function isFinished(b: CollectionEntry<'books'>): boolean {
-  return b.data.review.reading_status === 'finished';
+  return getReadingStatus(b) === 'finished';
 }
 export function isCurrentlyReading(b: CollectionEntry<'books'>): boolean {
-  return b.data.review.reading_status === 'reading';
+  return getReadingStatus(b) === 'reading';
 }
 
 export function readingProgress(books: CollectionEntry<'books'>[]) {
@@ -72,7 +80,7 @@ export function readingProgress(books: CollectionEntry<'books'>[]) {
   const reading = books.filter(isCurrentlyReading);
   const lastFinished = finished.length
     ? [...finished].sort((a, b) =>
-        (b.data.review.finished_date ?? '').localeCompare(a.data.review.finished_date ?? '')
+        (b.data.review.finished_on ?? '').localeCompare(a.data.review.finished_on ?? '')
       )[0]
     : null;
   return {
@@ -81,6 +89,25 @@ export function readingProgress(books: CollectionEntry<'books'>[]) {
     currentlyReading: reading[0] ?? null,
     lastFinished,
   };
+}
+
+// Chronological start/finish events across every book, newest first -- the
+// data behind /reading-log/. Two events per book are possible (it was
+// started, then later finished); a book with neither date logged yet
+// produces no entries.
+export interface ReadingLogEntry {
+  book: CollectionEntry<'books'>;
+  event: 'started' | 'finished';
+  date: string;
+}
+
+export function readingTimeline(books: CollectionEntry<'books'>[]): ReadingLogEntry[] {
+  const entries: ReadingLogEntry[] = [];
+  for (const b of books) {
+    if (b.data.review.started_on) entries.push({ book: b, event: 'started', date: b.data.review.started_on });
+    if (b.data.review.finished_on) entries.push({ book: b, event: 'finished', date: b.data.review.finished_on });
+  }
+  return entries.sort((a, b) => b.date.localeCompare(a.date));
 }
 
 // Minimal RFC4180 CSV parser — handles quoted fields, embedded commas, and

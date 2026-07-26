@@ -33,14 +33,19 @@ const books = defineCollection({
       medium_url: z.string().nullable(),
       linkedin_posted: z.string().nullable(),
       rating: z.number().nullable(),
-      finished_date: z.string().nullable(),
-      // Added so the site can show progress (homepage stat, "currently reading",
-      // category mini-bars) without a schema change every time a book's status
-      // moves. Defaults to 'not_started' so none of the existing 500 files
-      // (which predate this field) need to be touched -- Zod fills it in at
-      // build time. Set by hand-editing a book's frontmatter when it's started
-      // or finished; migrate_curriculum.py preserves whatever's here across re-runs.
-      reading_status: z.enum(['not_started', 'reading', 'finished']).default('not_started'),
+      // Plain ISO date strings (YYYY-MM-DD), hand-set in a book's frontmatter
+      // when you actually start/finish it. Reading status (not_started/
+      // reading/finished) is deliberately NOT stored as its own field -- it's
+      // derived from these two dates by lib/util.ts's getReadingStatus(), so
+      // there's only one thing to keep in sync, not two. migrate_curriculum.py
+      // preserves both across re-runs.
+      started_on: z.string().nullable(),
+      finished_on: z.string().nullable(),
+      // Short (1-2 sentence) takeaway -- meant to show up in list/timeline
+      // views (e.g. /reading-log/) even before a full review is written.
+      // The Markdown body below frontmatter is still the place for a full
+      // review; this is just the quick "what did I actually learn" note.
+      key_takeaway: z.string().nullable(),
     }),
   }),
 });

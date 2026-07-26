@@ -1,0 +1,64 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { isCurrentlyReading, readingTimeline } from '../../lib/util';
+
+const books = await getCollection('books');
+const currentlyReading = books
+  .filter(isCurrentlyReading)
+  .sort((a, b) => (b.data.review.started_on ?? '').localeCompare(a.data.review.started_on ?? ''));
+
+const timeline = readingTimeline(books);
+---
+
+<Layout title="Reading Log" description="A dated history of what's been started, finished, and learned across the 500 Books Challenge.">
+  <h1>Reading Log</h1>
+  <p class="meta">A dated record, not just a checklist — what's being read now, what's done, and what it taught.</p>
+
+  <h2>Currently reading</h2>
+  {currentlyReading.length > 0 ? (
+    <ul class="log-currently">
+      {currentlyReading.map((b) => (
+        <li>
+          <a href={`/books/${b.id}/`}>{b.data.title}</a>
+          <span class="author">— {b.data.author}</span>
+          <span class="tag">{b.data.category}</span>
+          {b.data.review.started_on && <span class="log-date">since {b.data.review.started_on}</span>}
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p class="log-empty">Nothing in progress yet. Set <code>review.started_on</code> in a book's frontmatter file to log one.</p>
+  )}
+
+  <h2>History</h2>
+  {timeline.length > 0 ? (
+    <ul class="log-timeline">
+      {timeline.map((entry) => (
+        <li>
+          <span class="log-date">{entry.date}</span>
+          <div>
+            <span class={entry.event === 'finished' ? 'log-event-finished' : 'log-event-started'}>
+              {entry.event === 'finished' ? 'Finished' : 'Started'}
+            </span>{' '}
+            <a href={`/books/${entry.book.id}/`}>{entry.book.data.title}</a>
+            <span class="author">— {entry.book.data.author}</span>
+            <span class="tag">{entry.book.data.category}</span>
+            {entry.event === 'finished' && entry.book.data.review.rating != null && (
+              <span class="meta"> · {entry.book.data.review.rating}/10</span>
+            )}
+            {entry.event === 'finished' && entry.book.data.review.key_takeaway && (
+              <p class="log-takeaway">"{entry.book.data.review.key_takeaway}"</p>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p class="log-empty">
+      Nothing logged yet. Once a book is started or finished, set <code>review.started_on</code> /
+      <code>review.finished_on</code> (and optionally <code>review.key_takeaway</code>) in its file
+      under <code>/data/curriculum/</code> and it'll show up here automatically.
+    </p>
+  )}
+</Layout>

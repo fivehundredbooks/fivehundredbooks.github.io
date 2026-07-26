@@ -11,11 +11,12 @@ folder (the one with 22_Full_125_Novels_List.md, 25_Levels_and_MiniThemes_Draft.
 Re-run this whenever the curriculum, reading order, or ownership file changes
 -- it's idempotent for structural fields (category, level, sequence, etc.,
 regenerated from source each time). Reading-progress data is NOT
-regenerated: `review` (reading_status, finished_date, rating, ...), a
+regenerated: `review` (started_on, finished_on, key_takeaway, rating, ...), a
 `status: confirmed` promotion, and any hand-written review body are read
 back from the existing file (if one exists) and carried forward untouched,
 so logging progress on a book is safe even if a category gets re-migrated
-later. See load_existing()/write_book() below.
+later. Legacy keys from an older schema (reading_status, finished_date) are
+dropped rather than carried forward -- see DEFAULT_REVIEW/write_book() below.
 
 Built 2026-07-26 as part of the first migration. Six passes:
   1. parse non-fiction (25_...) -> category/mini-theme/level per book
@@ -294,7 +295,8 @@ def main():
 
     FRONTMATTER_RE = re.compile(r'^---\n(.*?)\n---\n(.*)$', re.S)
     DEFAULT_REVIEW = {"own_site_url": None, "medium_url": None, "linkedin_posted": None,
-                      "rating": None, "finished_date": None}
+                      "rating": None, "started_on": None, "finished_on": None,
+                      "key_takeaway": None}
     DEFAULT_REST = "\n<!-- Review body goes here once written. Empty until then. -->\n"
 
     def load_existing(out_path):
@@ -317,7 +319,11 @@ def main():
     def write_book(out_path, data):
         existing = load_existing(out_path)
         if existing:
-            data["review"] = {**DEFAULT_REVIEW, **existing["review"]}
+            # Drop any keys from an older schema (e.g. the retired
+            # reading_status/finished_date fields) rather than carrying them
+            # forward as dead cruft in every file.
+            old_review = {k: v for k, v in (existing["review"] or {}).items() if k in DEFAULT_REVIEW}
+            data["review"] = {**DEFAULT_REVIEW, **old_review}
             if existing.get("status") == "confirmed":
                 data["status"] = "confirmed"
             rest = existing["rest"] if existing["rest"].strip() != DEFAULT_REST.strip() else DEFAULT_REST

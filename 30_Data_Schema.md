@@ -69,7 +69,9 @@ review:
   medium_url: null
   linkedin_posted: null         # date, once posted — LinkedIn has no reliable API, so this stays a manual flag
   rating: null
-  finished_date: null
+  started_on: null              # ISO date, hand-set when you actually start a book
+  finished_on: null             # ISO date, hand-set when you actually finish it (supersedes the original finished_date name)
+  key_takeaway: null            # 1-2 sentence takeaway, shown in list/timeline views ahead of a full review
 ---
 
 <!-- Review body goes here once written. Empty until then. -->
@@ -86,6 +88,13 @@ Fields worth flagging:
   needing a join to a separate mini-themes table.
 - `owned` is a boolean/link, not a copy of format/ASIN data — that detail
   lives in the ownership record so it isn't duplicated in two places.
+- Reading status (not started / reading / finished) is deliberately **not**
+  its own field — it's computed from `started_on`/`finished_on` at build time
+  (`getReadingStatus()` in the site's `lib/util.ts`), so there's one pair of
+  dates to hand-edit per book, not a status enum that can drift out of sync
+  with them. (2026-07-26: this replaced an earlier `reading_status` enum +
+  `finished_date` pair added directly to the live schema ahead of this doc;
+  this section now reflects what's actually live.)
 
 ## 2. Ownership records — extend the existing CSV, don't replace it
 

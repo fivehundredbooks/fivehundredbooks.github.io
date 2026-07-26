@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection, render } from 'astro:content';
-import { findByDataId, bySequence, categorySlug } from '../../lib/util';
+import { findByDataId, bySequence, categorySlug, getReadingStatus } from '../../lib/util';
 
 export async function getStaticPaths() {
   const books = await getCollection('books');
@@ -28,7 +28,7 @@ const seqIndex = ordered.findIndex((b) => b.id === book.id);
 const seqPrev = seqIndex > 0 ? ordered[seqIndex - 1] : null;
 const seqNext = seqIndex >= 0 && seqIndex < ordered.length - 1 ? ordered[seqIndex + 1] : null;
 
-const readingStatus = data.review.reading_status;
+const readingStatus = getReadingStatus(book);
 
 // Minimal schema.org/Book structured data. Kept conservative -- only fields
 // we actually have and are confident about (name, author, url, and a rating
@@ -68,15 +68,20 @@ if (readingStatus === 'finished' && data.review.rating != null) {
     {data.owned && <span class="owned-badge">you own this</span>}
     {readingStatus === 'finished' && (
       <span class="status-badge status-finished">
-        ✓ finished{data.review.finished_date ? ` ${data.review.finished_date}` : ''}
+        ✓ finished{data.review.finished_on ? ` ${data.review.finished_on}` : ''}
         {data.review.rating != null && ` · ${data.review.rating}/10`}
       </span>
     )}
-    {readingStatus === 'reading' && <span class="status-badge status-reading">currently reading</span>}
+    {readingStatus === 'reading' && (
+      <span class="status-badge status-reading">
+        currently reading{data.review.started_on ? ` since ${data.review.started_on}` : ''}
+      </span>
+    )}
   </p>
 
   {data.why_chosen && <p>{data.why_chosen}</p>}
   {data.placement_note && <p><em>Why here in the reading order: {data.placement_note}</em></p>}
+  {data.review.key_takeaway && <p class="key-takeaway">{data.review.key_takeaway}</p>}
 
   {data.connects_to_nonfiction && data.connects_to_nonfiction.length > 0 && (
     <p class="meta">
