@@ -171,6 +171,56 @@ footer.site-footer { border-top: 1px solid var(--border); margin-top: 3rem; padd
 .progress-detail { font-family: -apple-system, Helvetica, Arial, sans-serif; font-size: 0.88rem; color: var(--muted); margin: 0; }
 .progress-detail a { color: var(--accent); }
 
+/* --- Currently Reading (homepage) --- */
+.currently-reading { margin: 1.6rem 0 2rem; }
+.currently-reading h2 { margin-top: 0; margin-bottom: 0.9rem; }
+.cr-grid { display: grid; gap: 1.1rem; }
+.cr-card {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 1.1rem;
+  padding: 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+}
+.cr-card.no-cover { grid-template-columns: 1fr; }
+.cr-cover-link { display: block; }
+.cr-cover {
+  width: 96px;
+  height: 144px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  display: block;
+}
+.cr-body h3 { margin: 0 0 0.15rem; font-size: 1.15rem; }
+.cr-body h3 a { text-decoration: none; color: var(--ink); }
+.cr-body h3 a:hover { color: var(--accent); }
+.cr-author {
+  margin: 0 0 0.55rem;
+  color: var(--muted);
+  font-family: -apple-system, Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
+}
+.cr-about { margin: 0 0 0.65rem; font-size: 0.95rem; }
+.cr-tags { margin: 0 0 0.65rem; font-family: -apple-system, Helvetica, Arial, sans-serif; }
+.cr-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  margin: 0 0.35rem 0.35rem 0;
+}
+.cr-links { margin: 0; font-family: -apple-system, Helvetica, Arial, sans-serif; font-size: 0.88rem; }
+.cr-links a { margin-right: 1.1rem; }
+@media (max-width: 480px) {
+  .cr-card { grid-template-columns: 72px 1fr; }
+  .cr-cover { width: 72px; height: 108px; }
+}
+
 /* --- Primary call to action (homepage) --- */
 .cta-primary {
   display: inline-block;

@@ -17,6 +17,19 @@ connects_from: null
 connects_to: guns-germs-and-steel
 source_lists: []
 owned: true
+image: https://covers.openlibrary.org/b/isbn/9780062316097-L.jpg
+about: >
+  Harari's account of how an unremarkable ape on the African savanna became
+  the species reshaping the planet -- tracing the cognitive, agricultural,
+  and scientific revolutions, and the shared myths (money, nations,
+  religions) that let millions of strangers cooperate at scale. Opens the
+  curriculum with the big-picture frame the rest of World History fills in.
+tags:
+  - Anthropology
+  - Big History
+  - Evolution
+  - World History
+goodreads_url: https://www.goodreads.com/book/show/23692271-sapiens
 review:
   own_site_url: null
   medium_url: null

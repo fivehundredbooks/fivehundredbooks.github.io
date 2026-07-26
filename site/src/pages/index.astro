@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { bySequence, readingProgress } from '../lib/util';
+import { bySequence, readingProgress, isCurrentlyReading } from '../lib/util';
 
 const books = await getCollection('books');
 const nonfiction = books.filter((b) => b.data.type === 'nonfiction');
@@ -12,6 +12,14 @@ const ordered = bySequence(books);
 const firstBook = ordered[0];
 const progress = readingProgress(books);
 const pct = progress.total ? Math.round((progress.finishedCount / progress.total) * 100) : 0;
+
+// Full "Currently Reading" cards live in their own section below rather than
+// the one-line progress-detail mention, so there isn't a redundant second
+// "currently reading: X" right underneath it. Sorted newest-started-first so
+// a second book picked up later shows above one already underway.
+const currentlyReading = books
+  .filter(isCurrentlyReading)
+  .sort((a, b) => (b.data.review.started_on ?? '').localeCompare(a.data.review.started_on ?? ''));
 ---
 
 <Layout title="Home">
@@ -41,18 +49,56 @@ const pct = progress.total ? Math.round((progress.finishedCount / progress.total
       <span class="progress-label">read</span>
     </div>
     <div class="progress-track"><div class="progress-fill" style={`width:${pct}%`}></div></div>
-    <p class="progress-detail">
-      {progress.currentlyReading && (
-        <span>Currently reading: <a href={`/books/${progress.currentlyReading.id}/`}>{progress.currentlyReading.data.title}</a>. </span>
-      )}
-      {progress.lastFinished && (
-        <span>Last finished: <a href={`/books/${progress.lastFinished.id}/`}>{progress.lastFinished.data.title}</a>. </span>
-      )}
-      {!progress.currentlyReading && !progress.lastFinished && (
-        <span>The journey hasn't started yet — book #1 is below.</span>
-      )}
-    </p>
+    {(progress.lastFinished || !progress.currentlyReading) && (
+      <p class="progress-detail">
+        {progress.lastFinished && (
+          <span>Last finished: <a href={`/books/${progress.lastFinished.id}/`}>{progress.lastFinished.data.title}</a>. </span>
+        )}
+        {!progress.currentlyReading && !progress.lastFinished && (
+          <span>The journey hasn't started yet — book #1 is below.</span>
+        )}
+      </p>
+    )}
   </div>
+
+  <section class="currently-reading">
+    <h2>Currently Reading</h2>
+    {currentlyReading.length > 0 ? (
+      <div class="cr-grid">
+        {currentlyReading.map((b) => (
+          <article class={`cr-card${b.data.image ? '' : ' no-cover'}`}>
+            {b.data.image && (
+              <a href={`/books/${b.id}/`} class="cr-cover-link">
+                <img src={b.data.image} alt={`Cover of ${b.data.title}`} class="cr-cover" loading="lazy" />
+              </a>
+            )}
+            <div class="cr-body">
+              <p class="meta">
+                {b.data.category}
+                {b.data.review.started_on && ` · started ${b.data.review.started_on}`}
+              </p>
+              <h3><a href={`/books/${b.id}/`}>{b.data.title}</a></h3>
+              <p class="cr-author">by {b.data.author}</p>
+              {b.data.about && <p class="cr-about">{b.data.about}</p>}
+              {b.data.tags && b.data.tags.length > 0 && (
+                <p class="cr-tags">
+                  {b.data.tags.map((t) => <span class="cr-tag">{t}</span>)}
+                </p>
+              )}
+              <p class="cr-links">
+                <a href={`/books/${b.id}/`}>Book page &rarr;</a>
+                {b.data.goodreads_url && (
+                  <a href={b.data.goodreads_url} rel="noopener nofollow" target="_blank">Goodreads &rarr;</a>
+                )}
+              </p>
+            </div>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <p class="log-empty">Nothing in progress right now.</p>
+    )}
+  </section>
 
   {firstBook && (
     <a class="cta-primary" href={`/books/${firstBook.id}/`}>

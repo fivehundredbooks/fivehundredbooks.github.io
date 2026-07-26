@@ -95,6 +95,31 @@ Fields worth flagging:
   with them. (2026-07-26: this replaced an earlier `reading_status` enum +
   `finished_date` pair added directly to the live schema ahead of this doc;
   this section now reflects what's actually live.)
+- **Always quote `started_on`/`finished_on` in YAML** (`started_on: "2026-07-11"`,
+  not `started_on: 2026-07-11`). Unquoted, it's a bare YAML date scalar, which
+  every compliant YAML parser (including whatever Astro's content loader
+  uses) resolves to a native `Date` via the core schema's implicit
+  `!!timestamp` tag — not a string — which fails the Zod schema's
+  `z.string()` check and breaks the build. (2026-07-27: hit this for real —
+  a direct GitHub-web-UI edit set `started_on: 2026-07-11` unquoted on
+  Sapiens and broke the build. Fixed at the schema layer, not just by
+  requoting that one file: `content.config.ts` now accepts either a string
+  or a `Date` for both fields and normalizes to a plain `YYYY-MM-DD` string,
+  so a future unquoted hand-edit can't reintroduce this.)
+- (2026-07-27) Added four optional "Currently Reading" fields, populated by
+  hand once a book is actually picked up — not produced by
+  `migrate_curriculum.py`'s parsers, so the script reads them back and
+  carries them forward on every rerun, same as `review`/`status: confirmed`:
+  - `image` — a hotlinkable cover URL (Open Library's covers API by ISBN is
+    the default source: `https://covers.openlibrary.org/b/isbn/<isbn>-L.jpg`)
+  - `about` — a 2-4 sentence blurb for the homepage card (distinct from
+    `why_chosen`, which is about curriculum placement, not the book itself)
+  - `tags` — a short list of freeform subject tags, shown as pills
+  - `goodreads_url` — link to the book's Goodreads page
+  All four are `.optional()` (not just `.nullable()`) in the Zod schema,
+  since most of the 500 files predate them and don't have the keys at all
+  yet — only `sapiens.md` has real values so far, as the pilot for the
+  homepage's "Currently Reading" section.
 
 ## 2. Ownership records — extend the existing CSV, don't replace it
 

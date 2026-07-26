@@ -298,6 +298,12 @@ def main():
                       "rating": None, "started_on": None, "finished_on": None,
                       "key_takeaway": None}
     DEFAULT_REST = "\n<!-- Review body goes here once written. Empty until then. -->\n"
+    # Homepage "Currently Reading" fields -- hand-set directly in a book's
+    # frontmatter once it's actually picked up (image/about/tags/goodreads_url).
+    # None of the parsers above produce these, so -- same as `review` and
+    # `status: confirmed` -- they must be read back from the existing file and
+    # carried forward, or a re-migration would silently wipe them.
+    EXTRA_FIELDS = {"image": None, "about": None, "tags": [], "goodreads_url": None}
 
     def load_existing(out_path):
         """Read back whatever a previous run (or a hand-edit) left in place, so a
@@ -314,7 +320,10 @@ def main():
             front = yaml.safe_load(front_text) or {}
         except yaml.YAMLError:
             return None
-        return {"status": front.get("status"), "review": front.get("review") or {}, "rest": rest}
+        existing = {"status": front.get("status"), "review": front.get("review") or {}, "rest": rest}
+        for key, default in EXTRA_FIELDS.items():
+            existing[key] = front.get(key, default)
+        return existing
 
     def write_book(out_path, data):
         existing = load_existing(out_path)
@@ -327,7 +336,11 @@ def main():
             if existing.get("status") == "confirmed":
                 data["status"] = "confirmed"
             rest = existing["rest"] if existing["rest"].strip() != DEFAULT_REST.strip() else DEFAULT_REST
+            for key, default in EXTRA_FIELDS.items():
+                data[key] = existing.get(key, default)
         else:
+            for key, default in EXTRA_FIELDS.items():
+                data[key] = list(default) if isinstance(default, list) else default
             data["review"] = dict(DEFAULT_REVIEW)
             rest = DEFAULT_REST
         front = yaml.safe_dump(data, sort_keys=False, allow_unicode=True, default_flow_style=False, width=1000)
