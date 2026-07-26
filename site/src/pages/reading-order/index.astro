@@ -1,0 +1,41 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const books = await getCollection('books');
+const sorted = [...books].sort((a, b) => (a.data.sequence ?? 0) - (b.data.sequence ?? 0));
+
+const phases = new Map<string, typeof sorted>();
+for (const b of sorted) {
+  const phase = b.data.phase ?? 'Unphased';
+  if (!phases.has(phase)) phases.set(phase, []);
+  phases.get(phase)!.push(b);
+}
+---
+
+<Layout title="Reading Order">
+  <h1>The full 500-book reading order</h1>
+  <p class="meta">All 500 books, sequenced as a single staircase across 4 phases.</p>
+  <p>
+    Nothing here is locked — this is a first pass, built to be revised once
+    a few years into actually reading it. Each book is placed to prepare you
+    for the next, sometimes crossing category lines when a thread justifies it.
+  </p>
+
+  {[...phases.entries()].map(([phase, phaseBooks]) => (
+    <div class="phase-block">
+      <h2>{phase}</h2>
+      <ul class="book-list">
+        {phaseBooks.map((b) => (
+          <li>
+            <span class="meta">#{b.data.sequence}</span>{' '}
+            <a href={`/books/${b.id}/`}>{b.data.title}</a>
+            <span class="author">— {b.data.author}</span>
+            <span class="tag">{b.data.category}</span>
+            {b.data.owned && <span class="owned-badge">owned</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</Layout>

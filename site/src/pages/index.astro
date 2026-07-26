@@ -1,0 +1,37 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const books = await getCollection('books');
+const nonfiction = books.filter((b) => b.data.type === 'nonfiction');
+const novels = books.filter((b) => b.data.type === 'fiction');
+const categories = [...new Set(nonfiction.map((b) => b.data.category))];
+---
+
+<Layout title="Home">
+  <h1>The 500 Books Challenge</h1>
+  <p class="meta">A self-directed liberal education, 10–20 years, one book at a time.</p>
+
+  <p>
+    500 is deliberately almost impossible to finish quickly. This isn't a reading
+    sprint or a Goodreads challenge — it's an attempt to build the education I wish
+    I'd had: why civilizations rise and fall, how governments and economies work,
+    how science explains reality, what philosophers have argued for 2,500 years,
+    and the greatest stories ever written, all connected rather than studied in
+    isolation.
+  </p>
+
+  <p>
+    <strong>{nonfiction.length}</strong> non-fiction books across{' '}
+    <strong>{categories.length}</strong> categories, plus{' '}
+    <strong>{novels.length}</strong> novels, sequenced into a single staircase —
+    each book preparing the reader for the next.
+  </p>
+
+  <h2>Start here</h2>
+  <ul class="book-list">
+    <li><a href="/categories/">Browse the 15 non-fiction categories + novels</a></li>
+    <li><a href="/reading-order/">See the full 500-book reading order</a></li>
+    <li><a href="/blog/">Read the blog</a></li>
+  </ul>
+</Layout>

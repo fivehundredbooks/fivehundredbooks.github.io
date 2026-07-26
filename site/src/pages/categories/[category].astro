@@ -1,0 +1,41 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { folderSlug } from '../../lib/util';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  const slugs = [...new Set(books.map((b) => folderSlug(b)))];
+  return slugs.map((slug) => ({ params: { category: slug } }));
+}
+
+const { category } = Astro.params;
+const allBooks = await getCollection('books');
+const inCategory = allBooks.filter((b) => folderSlug(b) === category);
+const categoryName = inCategory[0]?.data.category ?? category;
+const isNovels = inCategory[0]?.data.type === 'fiction';
+
+const sorted = [...inCategory].sort((a, b) => {
+  if (isNovels) return a.data.title.localeCompare(b.data.title);
+  const mt = (a.data.mini_theme ?? 0) - (b.data.mini_theme ?? 0);
+  if (mt !== 0) return mt;
+  return (a.data.level ?? 0) - (b.data.level ?? 0);
+});
+---
+
+<Layout title={categoryName}>
+  <p class="meta"><a href="/categories/">&larr; All categories</a></p>
+  <h1>{categoryName}</h1>
+  <p class="meta">{sorted.length} books</p>
+
+  <ul class="book-list">
+    {sorted.map((b) => (
+      <li>
+        <a href={`/books/${b.id}/`}>{b.data.title}</a>
+        <span class="author">— {b.data.author}</span>
+        {!isNovels && <span class="tag">Mini-theme {b.data.mini_theme} · Level {b.data.level}</span>}
+        {b.data.owned && <span class="owned-badge">owned</span>}
+      </li>
+    ))}
+  </ul>
+</Layout>

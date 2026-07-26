@@ -1,0 +1,30 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { folderSlug } from '../../lib/util';
+
+const books = await getCollection('books');
+
+const groups = new Map<string, { name: string; slug: string; count: number }>();
+for (const b of books) {
+  const slug = folderSlug(b);
+  if (!groups.has(slug)) {
+    groups.set(slug, { name: b.data.category, slug, count: 0 });
+  }
+  groups.get(slug)!.count++;
+}
+const sorted = [...groups.values()].sort((a, b) => a.name.localeCompare(b.name));
+---
+
+<Layout title="Categories">
+  <h1>Categories</h1>
+  <p class="meta">15 non-fiction categories, 25 books each, plus the 125 novels.</p>
+  <ul class="category-grid">
+    {sorted.map((g) => (
+      <li>
+        <a href={`/categories/${g.slug}/`}>{g.name}</a>
+        <span class="count">{g.count} books</span>
+      </li>
+    ))}
+  </ul>
+</Layout>

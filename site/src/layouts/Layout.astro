@@ -1,0 +1,43 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'A self-directed liberal education, one book at a time — 500 books over 10-20 years.' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="alternate" type="application/rss+xml" title="500 Books" href="/rss.xml" />
+    <title>{title} · 500 Books</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="site-title" href="/">
+          The 500 Books Challenge
+          <small>ABL — Always Be Learning</small>
+        </a>
+        <nav class="site-nav">
+          <a href="/categories/">Categories</a>
+          <a href="/reading-order/">Reading Order</a>
+          <a href="/blog/">Blog</a>
+          <a href="/rss.xml">RSS</a>
+        </nav>
+      </div>
+    </header>
+    <div class="wrap">
+      <slot />
+      <footer class="site-footer">
+        <p>fivehundredbooks.com — a decade-plus, self-directed education. 125 novels, 375 non-fiction, 15 categories.</p>
+      </footer>
+    </div>
+  </body>
+</html>

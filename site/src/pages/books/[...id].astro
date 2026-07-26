@@ -1,0 +1,56 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection, render } from 'astro:content';
+import { findByDataId } from '../../lib/util';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  return books.map((b) => ({ params: { id: b.id }, props: { book: b, allBooks: books } }));
+}
+
+const { book, allBooks } = Astro.props;
+const { data } = book;
+const { Content } = await render(book);
+
+const prev = findByDataId(allBooks, data.connects_from);
+const next = findByDataId(allBooks, data.connects_to);
+---
+
+<Layout title={data.title} description={data.why_chosen ?? undefined}>
+  <p class="meta">
+    <a href={`/categories/${book.id.split('/')[0]}/`}>&larr; {data.category}</a>
+  </p>
+
+  <h1>{data.title}</h1>
+  {data.subtitle && <p class="meta">{data.subtitle}</p>}
+  <p>by {data.author}</p>
+
+  <p class="meta">
+    {data.type === 'nonfiction' ? `Mini-theme ${data.mini_theme} · Level ${data.level}` : 'Novel'}
+    {data.sequence && ` · #${data.sequence} of 500`}
+    {data.owned && <span class="owned-badge">you own this</span>}
+  </p>
+
+  {data.why_chosen && <p>{data.why_chosen}</p>}
+  {data.placement_note && <p><em>Why here in the reading order: {data.placement_note}</em></p>}
+
+  {data.connects_to_nonfiction && data.connects_to_nonfiction.length > 0 && (
+    <p class="meta">
+      Connects to: {data.connects_to_nonfiction.join(', ')}
+      {data.connects_to_nonfiction_note && ` — ${data.connects_to_nonfiction_note}`}
+    </p>
+  )}
+
+  {data.source_lists && data.source_lists.length > 0 && (
+    <p class="meta">On {data.source_lists.length} of the 9 source lists: {data.source_lists.join(', ')}</p>
+  )}
+
+  <div class="review-body">
+    <Content />
+  </div>
+
+  <div class="connects">
+    {prev && <p>&larr; Previous in {data.category}: <a href={`/books/${prev.id}/`}>{prev.data.title}</a></p>}
+    {next && <p>Next in {data.category}: <a href={`/books/${next.id}/`}>{next.data.title}</a> &rarr;</p>}
+  </div>
+</Layout>
