@@ -14,6 +14,18 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 <!doctype html>
 <html lang="en">
   <head>
+    <script is:inline>
+      // Runs before CSS paints, so there's no flash of the wrong theme.
+      // Falls back to the OS preference on a first visit, then remembers
+      // whatever the visitor picked via the toggle button below.
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
@@ -47,6 +59,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
           <a href="/library/">My Library</a>
           <a href="/blog/">Blog</a>
           <a href="/rss.xml">RSS</a>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch between light and dark mode">
+            <span class="icon-light" aria-hidden="true">&#127769;</span>
+            <span class="icon-dark" aria-hidden="true">&#9728;&#65039;</span>
+          </button>
         </nav>
       </div>
     </header>
@@ -63,5 +79,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         </div>
       </footer>
     </div>
+    <script is:inline>
+      document.addEventListener('click', function (e) {
+        var btn = e.target.closest('#theme-toggle');
+        if (!btn) return;
+        var current = document.documentElement.getAttribute('data-theme') || 'light';
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('theme', next); } catch (e) {}
+      });
+    </script>
   </body>
 </html>

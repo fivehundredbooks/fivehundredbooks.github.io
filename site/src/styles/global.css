@@ -2,9 +2,33 @@
   --ink: #1a1a1a;
   --paper: #fbfaf7;
   --accent: #8a3324;
+  --on-accent: #fff;
   --muted: #6b6b6b;
   --border: #e2ddd3;
+  --card-bg: #ffffff;
+  --good: #2f6f4f;
+  --info: #3b5a9a;
+  --warn: #b8860b;
   --max-width: 760px;
+  color-scheme: light;
+}
+
+/* Dark theme -- toggled by adding data-theme="dark" to <html> (see the
+   inline script in Layout.astro). Same variable names, different values,
+   so every rule written against var(--ink)/var(--paper)/etc. re-themes
+   automatically with no per-component dark-mode overrides needed. */
+:root[data-theme='dark'] {
+  --ink: #eae3d6;
+  --paper: #16130f;
+  --accent: #e2916b;
+  --on-accent: #1a1208;
+  --muted: #a89e8f;
+  --border: #3a3327;
+  --card-bg: #221d16;
+  --good: #6fbf98;
+  --info: #93b3ea;
+  --warn: #e8b34d;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -55,7 +79,7 @@ ul.book-list li { padding: 0.55rem 0; border-bottom: 1px solid var(--border); }
 ul.book-list .author { color: var(--muted); }
 ul.book-list .tag { font-family: -apple-system, Helvetica, Arial, sans-serif; font-size: 0.72rem; color: var(--muted); border: 1px solid var(--border); border-radius: 3px; padding: 0.05rem 0.4rem; margin-left: 0.4rem; }
 
-.owned-badge { color: #2f6f4f; font-family: -apple-system, Helvetica, Arial, sans-serif; font-size: 0.72rem; border: 1px solid #2f6f4f; border-radius: 3px; padding: 0.05rem 0.4rem; margin-left: 0.4rem; }
+.owned-badge { color: var(--good); font-family: -apple-system, Helvetica, Arial, sans-serif; font-size: 0.72rem; border: 1px solid var(--good); border-radius: 3px; padding: 0.05rem 0.4rem; margin-left: 0.4rem; }
 
 .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.9rem; list-style: none; padding: 0; margin: 1.5rem 0; }
 .category-grid li { border: 1px solid var(--border); border-radius: 6px; padding: 0.9rem 1rem; }
@@ -77,7 +101,7 @@ footer.site-footer { border-top: 1px solid var(--border); margin-top: 3rem; padd
   padding: 0.55rem 0.7rem;
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: #fff;
+  background: var(--card-bg);
   color: var(--ink);
   font-family: inherit;
   margin-bottom: 0.7rem;
@@ -91,11 +115,11 @@ footer.site-footer { border-top: 1px solid var(--border); margin-top: 3rem; padd
   padding: 0.3rem 0.7rem;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: #fff;
+  background: var(--card-bg);
   color: var(--muted);
   cursor: pointer;
 }
-.library-filters button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.library-filters button.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .library-filters button:hover { border-color: var(--accent); }
 
 .library-list li { font-size: 0.95rem; }
@@ -112,9 +136,9 @@ footer.site-footer { border-top: 1px solid var(--border); margin-top: 3rem; padd
   border: 1px solid var(--border);
   color: var(--muted);
 }
-.format-kindle { border-color: #2f6f4f; color: #2f6f4f; }
+.format-kindle { border-color: var(--good); color: var(--good); }
 .format-physical { border-color: var(--accent); color: var(--accent); }
-.format-audible { border-color: #3b5a9a; color: #3b5a9a; }
+.format-audible { border-color: var(--info); color: var(--info); }
 
 /* --- Reading-progress module (homepage) --- */
 .progress-module {
@@ -150,7 +174,7 @@ footer.site-footer { border-top: 1px solid var(--border); margin-top: 3rem; padd
   font-weight: 700;
   font-size: 1rem;
   text-decoration: none;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
   padding: 0.7rem 1.3rem;
   border-radius: 6px;
@@ -169,8 +193,8 @@ footer.site-footer { border-top: 1px solid var(--border); margin-top: 3rem; padd
   margin-left: 0.4rem;
   display: inline-block;
 }
-.status-finished { border: 1px solid #2f6f4f; color: #2f6f4f; }
-.status-reading { border: 1px solid #b8860b; color: #b8860b; }
+.status-finished { border: 1px solid var(--good); color: var(--good); }
+.status-reading { border: 1px solid var(--warn); color: var(--warn); }
 
 /* --- Social links (footer) --- */
 .social-links {
@@ -241,3 +265,26 @@ p.bio {
 @media (max-width: 600px) {
   .proof-strip { grid-template-columns: 1fr; gap: 0.8rem; }
 }
+
+/* --- Theme toggle button --- */
+nav.site-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+}
+.theme-toggle {
+  margin-left: auto;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  color: var(--ink);
+}
+.theme-toggle:hover { border-color: var(--accent); }
+.theme-toggle .icon-dark { display: none; }
+:root[data-theme='dark'] .theme-toggle .icon-light { display: none; }
+:root[data-theme='dark'] .theme-toggle .icon-dark { display: inline; }
