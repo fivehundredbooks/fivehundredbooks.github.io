@@ -54,12 +54,16 @@ header.site-header {
 header.site-header .wrap { padding-bottom: 1.25rem; padding-top: 1.5rem; }
 
 .site-title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
   font-size: 1.4rem;
   font-weight: 700;
   text-decoration: none;
   color: var(--ink);
   letter-spacing: 0.01em;
 }
+.site-logo { flex-shrink: 0; display: block; }
 .site-title small { display: block; font-weight: 400; color: var(--muted); font-size: 0.85rem; margin-top: 0.15rem; }
 
 nav.site-nav { margin-top: 0.9rem; font-family: -apple-system, Helvetica, Arial, sans-serif; font-size: 0.9rem; }

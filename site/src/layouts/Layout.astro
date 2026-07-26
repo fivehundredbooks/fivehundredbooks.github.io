@@ -33,24 +33,36 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <link rel="alternate" type="application/rss+xml" title="500 Books" href="/rss.xml" />
     <title>{pageTitle}</title>
 
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#8a3324" />
+
     <meta property="og:site_name" content="500 Books" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={new URL('/android-chrome-512x512.png', Astro.site)} />
 
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:site" content="@5hundredbooks" />
+    <meta name="twitter:image" content={new URL('/android-chrome-512x512.png', Astro.site)} />
     <slot name="head" />
   </head>
   <body>
     <header class="site-header">
       <div class="wrap">
         <a class="site-title" href="/">
-          The 500 Books Challenge
-          <small>ABL — Always Be Learning</small>
+          <img src="/logo.png" width="36" height="36" alt="" class="site-logo" />
+          <span>
+            The 500 Books Challenge
+            <small>ABL — Always Be Learning</small>
+          </span>
         </a>
         <nav class="site-nav">
           <a href="/about/">About</a>
