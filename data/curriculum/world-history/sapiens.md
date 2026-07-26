@@ -22,7 +22,7 @@ review:
   medium_url: null
   linkedin_posted: null
   rating: null
-  started_on: null
+  started_on: 2026-07-11
   finished_on: null
   key_takeaway: null
 ---
