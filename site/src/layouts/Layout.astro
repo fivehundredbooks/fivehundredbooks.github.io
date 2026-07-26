@@ -7,6 +7,8 @@ interface Props {
 }
 
 const { title, description = 'A self-directed liberal education, one book at a time — 500 books over 10-20 years.' } = Astro.props;
+const pageTitle = `${title} · 500 Books`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!doctype html>
@@ -15,8 +17,20 @@ const { title, description = 'A self-directed liberal education, one book at a t
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
     <link rel="alternate" type="application/rss+xml" title="500 Books" href="/rss.xml" />
-    <title>{title} · 500 Books</title>
+    <title>{pageTitle}</title>
+
+    <meta property="og:site_name" content="500 Books" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:site" content="@5hundredbooks" />
   </head>
   <body>
     <header class="site-header">
@@ -39,6 +53,13 @@ const { title, description = 'A self-directed liberal education, one book at a t
       <slot />
       <footer class="site-footer">
         <p>fivehundredbooks.com — a decade-plus, self-directed education. 125 novels, 375 non-fiction, 15 categories.</p>
+        <div class="social-links">
+          <a href="https://medium.com/@fivehundredbooks" rel="me">Medium</a>
+          <a href="https://www.instagram.com/fivehundredbooks/" rel="me">Instagram</a>
+          <a href="https://twitter.com/5hundredbooks" rel="me">X</a>
+          <a href="https://glasp.co/#/fivehundredbooks" rel="me">Glasp</a>
+          <a href="https://youtube.com/@5hundredbooks" rel="me">YouTube</a>
+        </div>
       </footer>
     </div>
   </body>

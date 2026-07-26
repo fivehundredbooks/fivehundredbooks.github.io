@@ -1,30 +1,56 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { folderSlug } from '../../lib/util';
+import { folderSlug, isFinished } from '../../lib/util';
 
 const books = await getCollection('books');
 
-const groups = new Map<string, { name: string; slug: string; count: number }>();
+const groups = new Map<string, { name: string; slug: string; count: number; finished: number }>();
 for (const b of books) {
   const slug = folderSlug(b);
   if (!groups.has(slug)) {
-    groups.set(slug, { name: b.data.category, slug, count: 0 });
+    groups.set(slug, { name: b.data.category, slug, count: 0, finished: 0 });
   }
-  groups.get(slug)!.count++;
+  const g = groups.get(slug)!;
+  g.count++;
+  if (isFinished(b)) g.finished++;
 }
 const sorted = [...groups.values()].sort((a, b) => a.name.localeCompare(b.name));
+
+// Level 0-10 histogram, non-fiction only (novels aren't leveled -- they're
+// sequenced by curated order, not a 0-10 build order).
+const levelCounts = new Array(11).fill(0);
+for (const b of books) {
+  if (b.data.type === 'nonfiction' && b.data.level != null) levelCounts[b.data.level]++;
+}
+const maxLevelCount = Math.max(...levelCounts, 1);
 ---
 
 <Layout title="Categories">
   <h1>Categories</h1>
   <p class="meta">15 non-fiction categories, 25 books each, plus the 125 novels.</p>
+
   <ul class="category-grid">
     {sorted.map((g) => (
       <li>
         <a href={`/categories/${g.slug}/`}>{g.name}</a>
-        <span class="count">{g.count} books</span>
+        <span class="count">{g.count} books{g.finished > 0 ? ` · ${g.finished} read` : ''}</span>
+        <div class="cat-progress-track">
+          <div class="cat-progress-fill" style={`width:${g.count ? (g.finished / g.count) * 100 : 0}%`}></div>
+        </div>
       </li>
     ))}
   </ul>
+
+  <h2>Non-fiction by level</h2>
+  <p class="meta">Level 0 lays the map; level 10 is hard only because the earlier levels built the scaffolding.</p>
+  <div class="level-chart">
+    {levelCounts.map((count, level) => (
+      <div class="level-col">
+        <span class="level-count">{count || ''}</span>
+        <div class="level-bar" style={`height:${count ? Math.max((count / maxLevelCount) * 100, 4) : 0}%`}></div>
+        <span class="level-label">{level}</span>
+      </div>
+    ))}
+  </div>
 </Layout>

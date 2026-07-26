@@ -9,11 +9,13 @@ folder (the one with 22_Full_125_Novels_List.md, 25_Levels_and_MiniThemes_Draft.
 32-35_PhaseN_Reading_Order.md).
 
 Re-run this whenever the curriculum, reading order, or ownership file changes
--- it's idempotent (regenerates every file from source each time; it does not
-preserve hand-edits made directly to /data/curriculum/*.md, so any manual
-edits to a book's review body should happen in a way that survives a re-run,
-or this script should be extended to merge rather than overwrite the review
-body section).
+-- it's idempotent for structural fields (category, level, sequence, etc.,
+regenerated from source each time). Reading-progress data is NOT
+regenerated: `review` (reading_status, finished_date, rating, ...), a
+`status: confirmed` promotion, and any hand-written review body are read
+back from the existing file (if one exists) and carried forward untouched,
+so logging progress on a book is safe even if a category gets re-migrated
+later. See load_existing()/write_book() below.
 
 Built 2026-07-26 as part of the first migration. Six passes:
   1. parse non-fiction (25_...) -> category/mini-theme/level per book
@@ -290,10 +292,41 @@ def main():
         n['connects_to_categories'] = conn['categories'] if conn else []
         n['connects_to_categories_note'] = conn['link'] if conn else None
 
-    def write_book(path, data):
+    FRONTMATTER_RE = re.compile(r'^---\n(.*?)\n---\n(.*)$', re.S)
+    DEFAULT_REVIEW = {"own_site_url": None, "medium_url": None, "linkedin_posted": None,
+                      "rating": None, "finished_date": None}
+    DEFAULT_REST = "\n<!-- Review body goes here once written. Empty until then. -->\n"
+
+    def load_existing(out_path):
+        """Read back whatever a previous run (or a hand-edit) left in place, so a
+        re-migration never clobbers logged reading progress. Returns None for a
+        book that's never been written before."""
+        if not os.path.exists(out_path):
+            return None
+        text = open(out_path, encoding='utf-8').read()
+        m = FRONTMATTER_RE.match(text)
+        if not m:
+            return None
+        front_text, rest = m.groups()
+        try:
+            front = yaml.safe_load(front_text) or {}
+        except yaml.YAMLError:
+            return None
+        return {"status": front.get("status"), "review": front.get("review") or {}, "rest": rest}
+
+    def write_book(out_path, data):
+        existing = load_existing(out_path)
+        if existing:
+            data["review"] = {**DEFAULT_REVIEW, **existing["review"]}
+            if existing.get("status") == "confirmed":
+                data["status"] = "confirmed"
+            rest = existing["rest"] if existing["rest"].strip() != DEFAULT_REST.strip() else DEFAULT_REST
+        else:
+            data["review"] = dict(DEFAULT_REVIEW)
+            rest = DEFAULT_REST
         front = yaml.safe_dump(data, sort_keys=False, allow_unicode=True, default_flow_style=False, width=1000)
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write(f"---\n{front}---\n\n<!-- Review body goes here once written. Empty until then. -->\n")
+        with open(out_path, 'w', encoding='utf-8') as f:
+            f.write(f"---\n{front}---\n{rest}")
 
     count = 0
     for b in nonfiction:
@@ -305,8 +338,6 @@ def main():
             "phase": b['phase'], "round": b['round'], "status": "draft", "why_chosen": b['note'],
             "connects_from": b['connects_from'], "connects_to": b['connects_to'],
             "source_lists": [], "owned": b['owned'],
-            "review": {"own_site_url": None, "medium_url": None, "linkedin_posted": None,
-                       "rating": None, "finished_date": None},
         }
         cat_slug = CATEGORY_SLUGS[b['category']]
         out_dir = os.path.join(OUT_ROOT, cat_slug)
@@ -326,8 +357,6 @@ def main():
             "connects_to_nonfiction": n['connects_to_categories'],
             "connects_to_nonfiction_note": n['connects_to_categories_note'],
             "placement_note": n['placement_note'],
-            "review": {"own_site_url": None, "medium_url": None, "linkedin_posted": None,
-                       "rating": None, "finished_date": None},
         }
         out_dir = os.path.join(OUT_ROOT, "novels")
         os.makedirs(out_dir, exist_ok=True)

@@ -21,6 +21,68 @@ export function findByDataId(
   return books.find((b) => b.data.id === dataId);
 }
 
+// Mirrors scripts/migrate_curriculum.py's CATEGORY_SLUGS so a non-fiction
+// category *name* (e.g. from connects_to_nonfiction) can link to its
+// /categories/<slug>/ page without a second data lookup. Novels use "novels".
+const CATEGORY_SLUGS: Record<string, string> = {
+  'World History': 'world-history',
+  'British History': 'british-history',
+  'Biography': 'biography',
+  'Psychology': 'psychology',
+  'Science': 'science',
+  'Politics & Economics': 'politics-economics',
+  'Religion & Mythology': 'religion-mythology',
+  'Ancient Philosophy': 'ancient-philosophy',
+  'Modern Philosophy': 'modern-philosophy',
+  'Leadership, Business & Decision Making': 'leadership-business-decision-making',
+  'Military History': 'military-history',
+  'Technology & AI': 'technology-ai',
+  'Nature, Geography & Environment': 'nature-geography-environment',
+  'Health & Longevity': 'health-longevity',
+  'Exploration, Adventure & Travel': 'exploration-adventure-travel',
+  'Novels': 'novels',
+};
+
+export function categorySlug(name: string): string | undefined {
+  return CATEGORY_SLUGS[name];
+}
+
+// Sequence-ordered view of the whole 500-book master reading order (novels
+// interleaved with non-fiction). Used for the book page's primary "next/prev"
+// links so they follow the actual staircase, not just same-category order.
+export function bySequence(books: CollectionEntry<'books'>[]): CollectionEntry<'books'>[] {
+  return [...books]
+    .filter((b) => b.data.sequence != null)
+    .sort((a, b) => (a.data.sequence ?? 0) - (b.data.sequence ?? 0));
+}
+
+// Reading-progress helpers, all driven off review.reading_status /
+// review.finished_date. A book counts as "read" once reading_status is
+// 'finished' -- kept as a function (not a filter callers repeat) so the
+// homepage, category pages, and any future page agree on the definition.
+export function isFinished(b: CollectionEntry<'books'>): boolean {
+  return b.data.review.reading_status === 'finished';
+}
+export function isCurrentlyReading(b: CollectionEntry<'books'>): boolean {
+  return b.data.review.reading_status === 'reading';
+}
+
+export function readingProgress(books: CollectionEntry<'books'>[]) {
+  const finished = books.filter(isFinished);
+  const reading = books.filter(isCurrentlyReading);
+  const lastFinished = finished.length
+    ? [...finished].sort((a, b) =>
+        (b.data.review.finished_date ?? '').localeCompare(a.data.review.finished_date ?? '')
+      )[0]
+    : null;
+  return {
+    finishedCount: finished.length,
+    total: books.length,
+    currentlyReading: reading[0] ?? null,
+    lastFinished,
+  };
+}
+
 // Minimal RFC4180 CSV parser — handles quoted fields, embedded commas, and
 // escaped quotes ("" inside a quoted field). Used for data/ownership.csv,
 // which is exported straight from LibraryThing/Kindle/Audible and can have

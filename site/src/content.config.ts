@@ -34,6 +34,13 @@ const books = defineCollection({
       linkedin_posted: z.string().nullable(),
       rating: z.number().nullable(),
       finished_date: z.string().nullable(),
+      // Added so the site can show progress (homepage stat, "currently reading",
+      // category mini-bars) without a schema change every time a book's status
+      // moves. Defaults to 'not_started' so none of the existing 500 files
+      // (which predate this field) need to be touched -- Zod fills it in at
+      // build time. Set by hand-editing a book's frontmatter when it's started
+      // or finished; migrate_curriculum.py preserves whatever's here across re-runs.
+      reading_status: z.enum(['not_started', 'reading', 'finished']).default('not_started'),
     }),
   }),
 });
